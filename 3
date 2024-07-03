@@ -1,0 +1,62 @@
+-- FPS Booster Script
+-- LocalScript
+
+local function simplifyPart(part)
+    if part:IsA("BasePart") then
+        part.Material = Enum.Material.SmoothPlastic
+        part.Reflectance = 0
+        part.Transparency = 0
+        part.CastShadow = false
+    end
+end
+
+local function removeTexturesAndDecals(object)
+    if object:IsA("Texture") or object:IsA("Decal") or object:IsA("SurfaceAppearance") then
+        object:Destroy()
+    end
+    if object:IsA("ParticleEmitter") or object:IsA("Trail") then
+        object:Destroy()
+    end
+    if object:IsA("Light") then
+        object.Enabled = false
+    end
+    if object:IsA("Sound") then
+        object:Stop()
+    end
+    for _, child in ipairs(object:GetChildren()) do
+        removeTexturesAndDecals(child)
+    end
+end
+
+local function boostFPS()
+    -- Simplify all parts and remove textures and decals in the Workspace
+    for _, object in ipairs(game.Workspace:GetDescendants()) do
+        simplifyPart(object)
+        removeTexturesAndDecals(object)
+    end
+
+    -- Reduce the quality of lighting
+    local lighting = game:GetService("Lighting")
+    lighting.GlobalShadows = false
+    lighting.Brightness = 1
+    lighting.TimeOfDay = "14:00:00"
+    lighting.FogEnd = 100000
+    lighting.OutdoorAmbient = Color3.new(1, 1, 1)
+
+    -- Disable all unnecessary scripts and effects in the Workspace
+    for _, object in ipairs(game.Workspace:GetDescendants()) do
+        if object:IsA("Script") or object:IsA("LocalScript") then
+            object.Disabled = true
+        end
+    end
+end
+
+-- Run the FPS booster function when the player joins
+game.Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function(character)
+        boostFPS()
+    end)
+end)
+
+-- Optionally, run the FPS booster function at the start of the game
+boostFPS()
